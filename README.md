@@ -7,6 +7,9 @@ A simple Java application for:
 - Verifying if a password has been leaked
 
 ---
+## UI Guide [here](src/main/java/github/lucas/ui/README.md)
+
+---
 
 ## Technologies Used
  - Java
