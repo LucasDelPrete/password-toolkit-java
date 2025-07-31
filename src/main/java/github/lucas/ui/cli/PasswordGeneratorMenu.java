@@ -1,0 +1,32 @@
+package github.lucas.ui.cli;
+
+import github.lucas.core.common.PasswordRequirements;
+import github.lucas.core.pass_generation.PasswordGenerator;
+import github.lucas.core.pass_strength.domain.PasswordFeedback;
+import github.lucas.core.pass_strength.domain.PasswordStrengthAnalyzer;
+
+import java.util.Scanner;
+
+public class PasswordGeneratorMenu {
+
+    public static void display(Scanner sc) {
+        System.out.print("Enter password's length: ");
+
+        int length;
+        if (!sc.hasNextInt()){
+            System.out.println("Invalid input");
+            return;
+        }
+
+        length = sc.nextInt();
+        if (length <= 0){
+            System.out.println("Invalid length");
+            return;
+        }
+
+        String password = PasswordGenerator.generate(length);
+
+        System.out.printf("\nGenerated Password:\n%s\n", password);
+
+    }
+}

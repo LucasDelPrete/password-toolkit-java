@@ -1,5 +1,7 @@
 package github.lucas.ui.cli;
 
+import github.lucas.core.pass_generation.PasswordGenerator;
+
 import java.util.Scanner;
 
 public class MainMenu {
@@ -30,6 +32,7 @@ public class MainMenu {
                     PasswordStrengthMenu.display(sc);
                     break;
                 case 2:
+                    PasswordGeneratorMenu.display(sc);
                     break;
                 case 3:
                     break;
