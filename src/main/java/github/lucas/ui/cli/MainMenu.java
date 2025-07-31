@@ -1,5 +1,7 @@
 package github.lucas.ui.cli;
 
+import github.lucas.core.pass_generation.PasswordGenerator;
+
 import java.util.Scanner;
 
 public class MainMenu {
