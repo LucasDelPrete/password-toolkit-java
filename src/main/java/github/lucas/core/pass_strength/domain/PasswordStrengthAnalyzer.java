@@ -1,56 +1,49 @@
 package github.lucas.core.pass_strength.domain;
 
-import static github.lucas.core.pass_strength.domain.PasswordStrength.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class PasswordStrengthAnalyzer {
 
-    private static final int defaultMinSizeThreshold = 6;
-    private static final int highClassificationThreshold = 4;
-    private static final int mediumClassificationThreshold = 2;
+    private static final int DEFAULT_MIN_SIZE_THRESHOLD = 6;
 
-    public static boolean lowerCase, upperCase , special, number;
+    public static PasswordFeedback analyzePassword(String password) {
+        List<String> missing = new ArrayList<>();
 
-    public static PasswordStrength parsePassword(String password) {
-        initializeFields();
-        if (password.length() < defaultMinSizeThreshold) return LOW;
+        if (password.length() < DEFAULT_MIN_SIZE_THRESHOLD) {
+            missing.add("Minimum length of " + DEFAULT_MIN_SIZE_THRESHOLD + " characters");
+        }
 
-        int count = checkPassword(password);
-
-        if (count == highClassificationThreshold) return HIGH;
-        else if (count > mediumClassificationThreshold) return MEDIUM;
-        else return LOW;
-    }
-
-    private static int checkPassword(String password) {
-        int count = 0;
+        boolean hasLower = false, hasUpper = false, hasDigit = false, hasSpecial = false;
 
         for (char c : password.toCharArray()) {
-            if (Character.isLowerCase(c)) {
-                if (!lowerCase) {
-                    lowerCase = true;
-                    count++;
-                }
-            } else if (Character.isUpperCase(c)) {
-                if (!upperCase) {
-                    upperCase = true;
-                    count++;
-                }
-            } else if (Character.isDigit(c)) {
-                if (!number) {
-                    number = true;
-                    count++;
-                }
-            } else {
-                if (!special) {
-                    special = true;
-                    count++;
-                }
-            }
+            if (Character.isLowerCase(c)) hasLower = true;
+            else if (Character.isUpperCase(c)) hasUpper = true;
+            else if (Character.isDigit(c)) hasDigit = true;
+            else if (!Character.isLetterOrDigit(c)) hasSpecial = true;
         }
-        return count;
-    }
 
-    private static void initializeFields() {
-        lowerCase = upperCase = special = number = false;
+        if (!hasLower) missing.add("Lowercase letter");
+        if (!hasUpper) missing.add("Uppercase letter");
+        if (!hasDigit)  missing.add("Digit");
+        if (!hasSpecial) missing.add("Special character");
+
+        PasswordStrength strength;
+
+        int fulfilled = 0;
+        if (hasLower) fulfilled++;
+        if (hasUpper) fulfilled++;
+        if (hasDigit) fulfilled++;
+        if (hasSpecial) fulfilled++;
+
+        if (password.length() < DEFAULT_MIN_SIZE_THRESHOLD || fulfilled < 2) {
+            strength = PasswordStrength.LOW;
+        } else if (fulfilled == 3) {
+            strength = PasswordStrength.MEDIUM;
+        } else {
+            strength = PasswordStrength.HIGH;
+        }
+
+        return new PasswordFeedback(strength, missing);
     }
 }
