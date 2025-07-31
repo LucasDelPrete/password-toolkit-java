@@ -37,7 +37,7 @@ public class PasswordStrengthAnalyzer {
         if (hasDigit) fulfilled++;
         if (hasSpecial) fulfilled++;
 
-        if (password.length() < DEFAULT_MIN_SIZE_THRESHOLD || fulfilled < 2) {
+        if (password.length() < DEFAULT_MIN_SIZE_THRESHOLD || fulfilled <= 2) {
             strength = PasswordStrength.LOW;
         } else if (fulfilled == 3) {
             strength = PasswordStrength.MEDIUM;
