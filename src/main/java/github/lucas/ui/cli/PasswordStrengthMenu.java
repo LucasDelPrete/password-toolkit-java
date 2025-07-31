@@ -1,5 +1,6 @@
 package github.lucas.ui.cli;
 
+import github.lucas.core.common.PasswordRequirements;
 import github.lucas.core.pass_strength.domain.PasswordFeedback;
 import github.lucas.core.pass_strength.domain.PasswordStrengthAnalyzer;
 
@@ -16,8 +17,8 @@ public class PasswordStrengthMenu {
 
         if (!feedback.getMissingRequirements().isEmpty()) {
             System.out.println("Missing requirements:");
-            for (String req : feedback.getMissingRequirements()) {
-                System.out.println("- " + req);
+            for (PasswordRequirements req : feedback.getMissingRequirements()) {
+                System.out.println("- " + req.getDescription());
             }
         }
     }

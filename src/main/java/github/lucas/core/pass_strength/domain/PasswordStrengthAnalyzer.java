@@ -1,5 +1,6 @@
 package github.lucas.core.pass_strength.domain;
 
+import github.lucas.core.common.PasswordRequirements;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -8,10 +9,10 @@ public class PasswordStrengthAnalyzer {
     private static final int DEFAULT_MIN_SIZE_THRESHOLD = 6;
 
     public static PasswordFeedback analyzePassword(String password) {
-        List<String> missing = new ArrayList<>();
+        List<PasswordRequirements> missing = new ArrayList<>();
 
         if (password.length() < DEFAULT_MIN_SIZE_THRESHOLD) {
-            missing.add("Minimum length of " + DEFAULT_MIN_SIZE_THRESHOLD + " characters");
+            missing.add(PasswordRequirements.SIZE);
         }
 
         boolean hasLower = false, hasUpper = false, hasDigit = false, hasSpecial = false;
@@ -23,10 +24,10 @@ public class PasswordStrengthAnalyzer {
             else if (!Character.isLetterOrDigit(c)) hasSpecial = true;
         }
 
-        if (!hasLower) missing.add("Lowercase letter");
-        if (!hasUpper) missing.add("Uppercase letter");
-        if (!hasDigit)  missing.add("Digit");
-        if (!hasSpecial) missing.add("Special character");
+        if (!hasLower) missing.add(PasswordRequirements.LOWER);
+        if (!hasUpper) missing.add(PasswordRequirements.UPPER);
+        if (!hasDigit) missing.add(PasswordRequirements.DIGIT);
+        if (!hasSpecial) missing.add(PasswordRequirements.SPECIAL);
 
         PasswordStrength strength;
 
