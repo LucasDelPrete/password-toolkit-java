@@ -1,4 +1,4 @@
-package github.lucas.core.pass_strength.domain;
+package github.lucas.core.pass_strength;
 
 import github.lucas.core.common.PasswordRequirements;
 import java.util.ArrayList;

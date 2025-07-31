@@ -1,4 +1,4 @@
-package github.lucas.core.pass_strength.domain;
+package github.lucas.core.pass_strength;
 
 public enum PasswordStrength {
     LOW, MEDIUM, HIGH

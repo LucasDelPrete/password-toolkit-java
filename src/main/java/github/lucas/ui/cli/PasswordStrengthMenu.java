@@ -1,8 +1,8 @@
 package github.lucas.ui.cli;
 
 import github.lucas.core.common.PasswordRequirements;
-import github.lucas.core.pass_strength.domain.PasswordFeedback;
-import github.lucas.core.pass_strength.domain.PasswordStrengthAnalyzer;
+import github.lucas.core.pass_strength.PasswordFeedback;
+import github.lucas.core.pass_strength.PasswordStrengthAnalyzer;
 
 import java.util.Scanner;
 
