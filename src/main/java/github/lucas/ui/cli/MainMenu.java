@@ -1,5 +1,6 @@
 package github.lucas.ui.cli;
 
+import github.lucas.core.pass_breach.PasswordBreachVerifier;
 import github.lucas.core.pass_generation.PasswordGenerator;
 
 import java.util.Scanner;
@@ -35,6 +36,7 @@ public class MainMenu {
                     PasswordGeneratorMenu.display(sc);
                     break;
                 case 3:
+                    PasswordBreachMenu.display(sc);
                     break;
                 default:
                     if (option != 0) {
