@@ -30,6 +30,7 @@ public class MainMenu {
                     PasswordStrengthMenu.display(sc);
                     break;
                 case 2:
+                    PasswordGeneratorMenu.display(sc);
                     break;
                 case 3:
                     break;
