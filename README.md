@@ -14,7 +14,7 @@ A simple Java application for:
 ## Technologies Used
  - Java
  - HaveIBeenPwned API
- - Java Swing
+ - JavaFX
 
 ### Prerequisites
 - Java 17 or higher
