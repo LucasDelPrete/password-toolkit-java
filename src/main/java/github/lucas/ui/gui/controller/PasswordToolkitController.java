@@ -2,6 +2,7 @@ package github.lucas.ui.gui.controller;
 
 import github.lucas.core.common.PasswordRequirements;
 import github.lucas.core.pass_breach.PasswordBreachVerifier;
+import github.lucas.core.pass_generation.PasswordGenerator;
 import github.lucas.core.pass_strength.PasswordFeedback;
 import github.lucas.core.pass_strength.PasswordStrength;
 import github.lucas.core.pass_strength.PasswordStrengthAnalyzer;
@@ -9,10 +10,7 @@ import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.layout.AnchorPane;
 
 import java.net.URL;
@@ -35,6 +33,24 @@ public class PasswordToolkitController implements Initializable {
     private Label breachedPassMsg2Label;
 
     @FXML
+    private Button generatePassButton;
+
+    @FXML
+    private Label passBreachEmptyInputLabel;
+
+    @FXML
+    private TextField passBreachTextField;
+
+    @FXML
+    private TextField passGenDisplay;
+
+    @FXML
+    private Label passGenInvalidLengthLabel;
+
+    @FXML
+    private TextField passGenLengthTextField;
+
+    @FXML
     private Label passStrengthDigitLabel;
 
     @FXML
@@ -50,16 +66,16 @@ public class PasswordToolkitController implements Initializable {
     private Label passStrengthSpecialLabel;
 
     @FXML
-    private Label passBreachEmptyInputLabel;
-
-    @FXML
     private TextField passStrengthTextField;
 
     @FXML
-    private TextField passBreachTextField;
+    private Label passStrengthUpperLabel;
 
     @FXML
-    private Label passStrengthUpperLabel;
+    private Button saveGeneratedPassButton;
+
+    @FXML
+    private ListView<?> savedPassListView;
 
     @FXML
     private Label unbreachedPassMsg1Label;
@@ -69,6 +85,29 @@ public class PasswordToolkitController implements Initializable {
 
     @FXML
     private Button verifyPassBreachButton;
+
+    @FXML
+    void generatePassword(ActionEvent event) {
+        String input = passGenLengthTextField.getText().trim();
+        int enteredLength;
+        if (!input.isEmpty()){
+            passGenInvalidLengthLabel.setVisible(false);
+            enteredLength = Integer.parseInt(input);
+            if (enteredLength > 6 && enteredLength < 256) {
+                String generatedPass = PasswordGenerator.generate(enteredLength);
+                passGenDisplay.setText(generatedPass);
+            } else {
+                passGenInvalidLengthLabel.setVisible(true);
+            }
+        } else {
+            passGenInvalidLengthLabel.setVisible(true);
+        }
+    }
+
+    @FXML
+    void saveGeneratedPassword(ActionEvent event) {
+
+    }
 
     @FXML
     void verifyPasswordBreach(ActionEvent event) {
