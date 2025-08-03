@@ -2,6 +2,7 @@ package github.lucas.ui.gui.controller;
 
 import github.lucas.core.common.PasswordRequirements;
 import github.lucas.core.pass_breach.PasswordBreachVerifier;
+import github.lucas.core.pass_generation.Credential;
 import github.lucas.core.pass_generation.PasswordGenerator;
 import github.lucas.core.pass_strength.PasswordFeedback;
 import github.lucas.core.pass_strength.PasswordStrength;
@@ -22,10 +23,7 @@ import javafx.stage.Stage;
 
 import java.io.IOException;
 import java.net.URL;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.ResourceBundle;
+import java.util.*;
 
 public class PasswordToolkitController implements Initializable {
     private final static String GREEN = "#2ecc71";
@@ -99,7 +97,7 @@ public class PasswordToolkitController implements Initializable {
     @FXML
     private Button verifyPassBreachButton;
 
-    private final Map<String, Map<String, String>> passwordDatabase = new HashMap<>();
+    private final Map<String, Credential> passwordDatabase = new HashMap<>();
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -169,7 +167,8 @@ public class PasswordToolkitController implements Initializable {
             stage.setResizable(false);
             stage.initModality(Modality.APPLICATION_MODAL);
             stage.showAndWait();
-            savedPassListView.setItems(FXCollections.observableArrayList(passwordDatabase.keySet()));
+
+            refreshList();
         } else {
             saveEmptyPassLabel.setVisible(true);
         }
@@ -220,7 +219,7 @@ public class PasswordToolkitController implements Initializable {
             stage.initOwner(savedPassListView.getScene().getWindow());
             stage.showAndWait();
 
-            savedPassListView.setItems(FXCollections.observableArrayList(passwordDatabase.keySet()));
+            refreshList();
         } catch (IOException e) {
             showError("Opening record failed", "There was an error opening the record. Please try again later.");
         }
@@ -273,12 +272,18 @@ public class PasswordToolkitController implements Initializable {
         label.setStyle("-fx-text-fill: " + GREEN + ";");
     }
 
-    private void showError(String header, String message){
+    private void showError(String header, String message) {
         Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setTitle("Error");
         alert.setHeaderText(header);
         alert.setContentText(message);
         alert.showAndWait();
+    }
+
+    private void refreshList() {
+        List<String> sortedSites = new ArrayList<>(passwordDatabase.keySet());
+        sortedSites.sort(String.CASE_INSENSITIVE_ORDER);
+        savedPassListView.setItems(FXCollections.observableArrayList(sortedSites));
     }
 
     private void resetRequirements() {

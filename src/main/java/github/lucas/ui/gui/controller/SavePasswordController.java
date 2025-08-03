@@ -1,7 +1,6 @@
 package github.lucas.ui.gui.controller;
 
-import github.lucas.core.pass_strength.PasswordFeedback;
-import github.lucas.core.pass_strength.PasswordStrengthAnalyzer;
+import github.lucas.core.pass_generation.Credential;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -43,27 +42,28 @@ public class SavePasswordController implements Initializable {
     @FXML
     private Button deleteRecordButton;
 
-    private Map<String, Map<String, String>> passwordDatabase = new HashMap<>();
+    private Map<String, Credential> passwordDatabase;
+    private String originalSite;
 
     public void setPassword(String password) {
         passwordTextField.setText(password);
     }
 
-    public void setPasswordDatabase(Map<String, Map<String, String>> passwordDatabase){
+    public void setPasswordDatabase(Map<String, Credential> passwordDatabase) {
         this.passwordDatabase = passwordDatabase;
     }
 
     public void setSiteToEdit(String site) {
         siteNameTextField.setText(site);
         siteNameTextField.setDisable(true);
+        originalSite = site;
 
         deleteRecordButton.setVisible(true);
 
-        Map<String, String> credentials = passwordDatabase.get(site);
-        if (credentials != null && !credentials.isEmpty()) {
-            Map.Entry<String, String> entry = credentials.entrySet().iterator().next();
-            usernameTextField.setText(entry.getKey());
-            passwordTextField.setText(entry.getValue());
+        Credential credentials = passwordDatabase.get(site);
+        if (credentials != null) {
+            usernameTextField.setText(credentials.getUsername());
+            passwordTextField.setText(credentials.getPassword());
         }
     }
 
@@ -75,15 +75,21 @@ public class SavePasswordController implements Initializable {
 
         if (!site.isEmpty() && !username.isEmpty() && !password.isEmpty()) {
             incompleteRecordLabel.setVisible(false);
-            passwordDatabase.computeIfAbsent(site, k -> new HashMap<>())
-                    .put(username, password);
+
+            if (originalSite == null) {
+                originalSite = site;
+                passwordDatabase.put(site, new Credential(username, password));
+            } else {
+                Credential credential = passwordDatabase.get(originalSite);
+                credential.setUsername(username);
+                credential.setPassword(password);
+            }
 
             ((Stage) saveRecordButton.getScene().getWindow()).close();
 
         } else {
             incompleteRecordLabel.setVisible(true);
         }
-
     }
 
     @FXML
@@ -98,8 +104,6 @@ public class SavePasswordController implements Initializable {
         mainPane.setFocusTraversable(true);
         mainPane.setOnMousePressed(e -> mainPane.requestFocus());
 
-        siteNameTextField.textProperty().addListener((obs, oldText, newText) -> {
-            siteNameDisplayLabel.setText(newText);
-        });
+        siteNameTextField.textProperty().addListener((obs, oldText, newText) -> siteNameDisplayLabel.setText(newText));
     }
 }
