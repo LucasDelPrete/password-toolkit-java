@@ -7,14 +7,24 @@ import github.lucas.core.pass_strength.PasswordFeedback;
 import github.lucas.core.pass_strength.PasswordStrength;
 import github.lucas.core.pass_strength.PasswordStrengthAnalyzer;
 import javafx.application.Platform;
+import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
+import javafx.scene.Node;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.AnchorPane;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
 
+import java.io.IOException;
 import java.net.URL;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.ResourceBundle;
 
 public class PasswordToolkitController implements Initializable {
@@ -31,6 +41,9 @@ public class PasswordToolkitController implements Initializable {
 
     @FXML
     private Label breachedPassMsg2Label;
+
+    @FXML
+    private Label saveEmptyPassLabel;
 
     @FXML
     private Button generatePassButton;
@@ -75,7 +88,7 @@ public class PasswordToolkitController implements Initializable {
     private Button saveGeneratedPassButton;
 
     @FXML
-    private ListView<?> savedPassListView;
+    private ListView<String> savedPassListView;
 
     @FXML
     private Label unbreachedPassMsg1Label;
@@ -86,11 +99,13 @@ public class PasswordToolkitController implements Initializable {
     @FXML
     private Button verifyPassBreachButton;
 
+    private final Map<String, Map<String, String>> passwordDatabase = new HashMap<>();
+
     @FXML
     void generatePassword(ActionEvent event) {
         String input = passGenLengthTextField.getText().trim();
         int enteredLength;
-        if (!input.isEmpty()){
+        if (!input.isEmpty()) {
             passGenInvalidLengthLabel.setVisible(false);
             enteredLength = Integer.parseInt(input);
             if (enteredLength > 6 && enteredLength < 256) {
@@ -105,8 +120,28 @@ public class PasswordToolkitController implements Initializable {
     }
 
     @FXML
-    void saveGeneratedPassword(ActionEvent event) {
+    void saveGeneratedPassword(ActionEvent event) throws IOException {
+        String password = passGenDisplay.getText().trim();
+        if (!password.isEmpty()) {
+            saveEmptyPassLabel.setVisible(false);
+            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/SavePassword.fxml"));
+            Parent popupRoot = fxmlLoader.load();
 
+            SavePasswordController controller = fxmlLoader.getController();
+            controller.setPassword(password);
+            controller.setPasswordDatabase(passwordDatabase);
+
+            Stage stage = new Stage();
+            stage.initOwner(((Node) event.getSource()).getScene().getWindow());
+            stage.setTitle("Save Password");
+            stage.setScene(new Scene(popupRoot, 400, 600));
+            stage.setResizable(false);
+            stage.initModality(Modality.APPLICATION_MODAL);
+            stage.showAndWait();
+            savedPassListView.setItems(FXCollections.observableArrayList(passwordDatabase.keySet()));
+        } else {
+            saveEmptyPassLabel.setVisible(true);
+        }
     }
 
     @FXML
