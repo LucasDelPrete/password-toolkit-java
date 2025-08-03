@@ -101,6 +101,37 @@ public class PasswordToolkitController implements Initializable {
 
     private final Map<String, Map<String, String>> passwordDatabase = new HashMap<>();
 
+    @Override
+    public void initialize(URL location, ResourceBundle resources) {
+        Platform.runLater(() -> mainPane.requestFocus());
+        mainPane.setFocusTraversable(true);
+        mainPane.setOnMousePressed(e -> mainPane.requestFocus());
+        passStrengthTextField.textProperty().addListener((obs, oldText, newText) -> {
+            if (!newText.isEmpty()) {
+                PasswordFeedback feedback = PasswordStrengthAnalyzer.analyzePassword(newText);
+                updateStrengthLabels(feedback);
+            } else {
+                resetRequirements();
+            }
+        });
+        passBreachTextField.textProperty().addListener((obs, oldText, newText) -> {
+            if (newText.isEmpty()) {
+                breachedPassMsg1Label.setVisible(false);
+                breachedPassMsg2Label.setVisible(false);
+                unbreachedPassMsg1Label.setVisible(false);
+                unbreachedPassMsg2Label.setVisible(false);
+            }
+        });
+        savedPassListView.setOnMouseClicked(event -> {
+            if (event.getClickCount() == 2) {
+                String selectedSite = savedPassListView.getSelectionModel().getSelectedItem();
+                if (selectedSite != null) {
+                    openEditPopup(selectedSite);
+                }
+            }
+        });
+    }
+
     @FXML
     void generatePassword(ActionEvent event) {
         String input = passGenLengthTextField.getText().trim();
@@ -165,38 +196,34 @@ public class PasswordToolkitController implements Initializable {
                 }
 
             } catch (Exception e) {
-                Alert alert = new Alert(Alert.AlertType.ERROR);
-                alert.setTitle("Error");
-                alert.setHeaderText("Password Verification Failed");
-                alert.setContentText("There was an error verifying the password. Please try again later.");
-                alert.showAndWait();
+                showError("Password Verification Failed", "There was an error verifying the password. Please try again later.");
             }
         } else {
             passBreachEmptyInputLabel.setVisible(true);
         }
     }
 
-    @Override
-    public void initialize(URL location, ResourceBundle resources) {
-        Platform.runLater(() -> mainPane.requestFocus());
-        mainPane.setFocusTraversable(true);
-        mainPane.setOnMousePressed(e -> mainPane.requestFocus());
-        passStrengthTextField.textProperty().addListener((obs, oldText, newText) -> {
-            if (!newText.isEmpty()) {
-                PasswordFeedback feedback = PasswordStrengthAnalyzer.analyzePassword(newText);
-                updateStrengthLabels(feedback);
-            } else {
-                resetRequirements();
-            }
-        });
-        passBreachTextField.textProperty().addListener((obs, oldText, newText) -> {
-            if (newText.isEmpty()) {
-                breachedPassMsg1Label.setVisible(false);
-                breachedPassMsg2Label.setVisible(false);
-                unbreachedPassMsg1Label.setVisible(false);
-                unbreachedPassMsg2Label.setVisible(false);
-            }
-        });
+    private void openEditPopup(String siteName) {
+        try {
+            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/SavePassword.fxml"));
+            Parent popupRoot = fxmlLoader.load();
+
+            SavePasswordController controller = fxmlLoader.getController();
+            controller.setPasswordDatabase(passwordDatabase);
+            controller.setSiteToEdit(siteName);
+
+            Stage stage = new Stage();
+            stage.setScene(new Scene(popupRoot, 400, 600));
+            stage.initModality(Modality.APPLICATION_MODAL);
+            stage.setResizable(false);
+            stage.setTitle("Edit Credentials");
+            stage.initOwner(savedPassListView.getScene().getWindow());
+            stage.showAndWait();
+
+            savedPassListView.setItems(FXCollections.observableArrayList(passwordDatabase.keySet()));
+        } catch (IOException e) {
+            showError("Opening record failed", "There was an error opening the record. Please try again later.");
+        }
     }
 
     private void updateStrengthLabels(PasswordFeedback feedback) {
@@ -244,6 +271,14 @@ public class PasswordToolkitController implements Initializable {
 
     private void setFulfilledRequirement(Label label) {
         label.setStyle("-fx-text-fill: " + GREEN + ";");
+    }
+
+    private void showError(String header, String message){
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setTitle("Error");
+        alert.setHeaderText(header);
+        alert.setContentText(message);
+        alert.showAndWait();
     }
 
     private void resetRequirements() {

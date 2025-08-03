@@ -40,6 +40,9 @@ public class SavePasswordController implements Initializable {
     @FXML
     private TextField usernameTextField;
 
+    @FXML
+    private Button deleteRecordButton;
+
     private Map<String, Map<String, String>> passwordDatabase = new HashMap<>();
 
     public void setPassword(String password) {
@@ -50,13 +53,28 @@ public class SavePasswordController implements Initializable {
         this.passwordDatabase = passwordDatabase;
     }
 
+    public void setSiteToEdit(String site) {
+        siteNameTextField.setText(site);
+        siteNameTextField.setDisable(true);
+
+        deleteRecordButton.setVisible(true);
+
+        Map<String, String> credentials = passwordDatabase.get(site);
+        if (credentials != null && !credentials.isEmpty()) {
+            Map.Entry<String, String> entry = credentials.entrySet().iterator().next();
+            usernameTextField.setText(entry.getKey());
+            passwordTextField.setText(entry.getValue());
+        }
+    }
+
     @FXML
     void saveRecord(ActionEvent event) {
-        if (!siteNameTextField.getText().trim().isEmpty() && !usernameTextField.getText().trim().isEmpty() && !passwordTextField.getText().trim().isEmpty()) {
+        String site = siteNameTextField.getText().trim();
+        String username = usernameTextField.getText().trim();
+        String password = passwordTextField.getText().trim();
+
+        if (!site.isEmpty() && !username.isEmpty() && !password.isEmpty()) {
             incompleteRecordLabel.setVisible(false);
-            String site = siteNameTextField.getText().trim();
-            String username = usernameTextField.getText().trim();
-            String password = passwordTextField.getText();
             passwordDatabase.computeIfAbsent(site, k -> new HashMap<>())
                     .put(username, password);
 
@@ -66,6 +84,12 @@ public class SavePasswordController implements Initializable {
             incompleteRecordLabel.setVisible(true);
         }
 
+    }
+
+    @FXML
+    void deleteRecord(ActionEvent event) {
+        passwordDatabase.remove(siteNameTextField.getText().trim());
+        ((Stage) saveRecordButton.getScene().getWindow()).close();
     }
 
     @Override
