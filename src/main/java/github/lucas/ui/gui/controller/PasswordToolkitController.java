@@ -9,6 +9,8 @@ import github.lucas.core.pass_strength.PasswordStrength;
 import github.lucas.core.pass_strength.PasswordStrengthAnalyzer;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.collections.transformation.FilteredList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -18,6 +20,7 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.HBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 
@@ -30,6 +33,9 @@ public class PasswordToolkitController implements Initializable {
     private final static String ORANGE = "#e67e22";
     private final static String RED = "#e74c3c";
     private final static String BLACK = "#000000";
+
+    @FXML
+    private HBox searchBox;
 
     @FXML
     private AnchorPane mainPane;
@@ -95,9 +101,19 @@ public class PasswordToolkitController implements Initializable {
     private Label unbreachedPassMsg2Label;
 
     @FXML
+    private TextField searchBar;
+
+    @FXML
+    private Button clearButton;
+
+    @FXML
     private Button verifyPassBreachButton;
 
     private final Map<String, Credential> passwordDatabase = new HashMap<>();
+
+    private ObservableList<String> masterData;
+
+    private FilteredList<String> filteredData;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -128,6 +144,27 @@ public class PasswordToolkitController implements Initializable {
                 }
             }
         });
+
+        masterData = FXCollections.observableArrayList(passwordDatabase.keySet());
+        filteredData = new FilteredList<>(masterData, s -> true);
+        savedPassListView.setItems(filteredData);
+
+        searchBar.textProperty().addListener((obs, oldText, newText) -> {
+            clearButton.setVisible(!newText.isEmpty());
+            String lowerCaseFilter = newText.toLowerCase();
+
+            filteredData.setPredicate(item -> {
+                if (newText.isEmpty()) {
+                    return true;
+                }
+                return item.toLowerCase().contains(lowerCaseFilter);
+            });
+        });
+    }
+
+    @FXML
+    private void clearSearch() {
+        searchBar.clear();
     }
 
     @FXML
@@ -283,7 +320,7 @@ public class PasswordToolkitController implements Initializable {
     private void refreshList() {
         List<String> sortedSites = new ArrayList<>(passwordDatabase.keySet());
         sortedSites.sort(String.CASE_INSENSITIVE_ORDER);
-        savedPassListView.setItems(FXCollections.observableArrayList(sortedSites));
+        masterData.setAll(sortedSites);
     }
 
     private void resetRequirements() {

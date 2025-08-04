@@ -11,7 +11,9 @@ public class PasswordToolkit extends Application {
     public void start(Stage stage) throws Exception {
         Parent root = FXMLLoader.load(getClass().getResource("/PasswordToolkit.fxml"));
         stage.setTitle("Password Toolkit");
-        stage.setScene(new Scene(root, 1000, 700));
+        Scene scene = new Scene(root, 1000, 700);
+        scene.getStylesheets().add(getClass().getResource("/style.css").toExternalForm());
+        stage.setScene(scene);
         stage.setResizable(false);
         stage.show();
     }
