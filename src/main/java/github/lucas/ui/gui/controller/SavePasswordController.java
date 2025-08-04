@@ -5,7 +5,10 @@ import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
 
@@ -103,16 +106,28 @@ public class SavePasswordController implements Initializable {
 
     @FXML
     void deleteRecord(ActionEvent event) {
-        passwordDatabase.remove(siteNameTextField.getText().trim());
-        ((Stage) saveRecordButton.getScene().getWindow()).close();
+        if (showConfirmation("Delete record", "Are you sure you want to delete this record?")) {
+            passwordDatabase.remove(siteNameTextField.getText().trim());
+            ((Stage) saveRecordButton.getScene().getWindow()).close();
+        }
     }
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
-        Platform.runLater(() -> mainPane.requestFocus());
-        mainPane.setFocusTraversable(true);
-        mainPane.setOnMousePressed(e -> mainPane.requestFocus());
+        Platform.runLater(() -> {
+            mainPane.requestFocus();
+            mainPane.setFocusTraversable(true);
+            mainPane.setOnMousePressed(e -> mainPane.requestFocus());
 
+            Scene scene = saveRecordButton.getScene();
+            if (scene != null) {
+                scene.addEventFilter(KeyEvent.KEY_PRESSED, event -> {
+                    if (event.getCode() == KeyCode.ESCAPE) {
+                        ((Stage) saveRecordButton.getScene().getWindow()).close();
+                    }
+                });
+            }
+        });
         siteNameTextField.textProperty().addListener((obs, oldText, newText) -> {
             siteNameDisplayLabel.setText(newText);
 
@@ -138,6 +153,9 @@ public class SavePasswordController implements Initializable {
                 }
             }
         });
+        siteNameTextField.setOnAction(e -> saveRecordButton.fire());
+        usernameTextField.setOnAction(e -> saveRecordButton.fire());
+        passwordTextField.setOnAction(e -> saveRecordButton.fire());
     }
 
     private boolean showConfirmation(String header, String message) {

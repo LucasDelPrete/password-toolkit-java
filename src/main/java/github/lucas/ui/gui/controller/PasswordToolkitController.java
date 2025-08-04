@@ -160,6 +160,10 @@ public class PasswordToolkitController implements Initializable {
                 return item.toLowerCase().contains(lowerCaseFilter);
             });
         });
+
+        passBreachTextField.setOnAction(e -> verifyPassBreachButton.fire());
+        passGenLengthTextField.setOnAction(e -> generatePassButton.fire());
+        passGenDisplay.setOnAction(e -> saveGeneratedPassButton.fire());
     }
 
     @FXML
