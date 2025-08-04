@@ -5,15 +5,13 @@ import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
 
 import java.net.URL;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.ResourceBundle;
 
 public class SavePasswordController implements Initializable {
@@ -32,6 +30,12 @@ public class SavePasswordController implements Initializable {
 
     @FXML
     private Label incompleteRecordLabel;
+
+    @FXML
+    private Label editingWarning1Label;
+
+    @FXML
+    private Label editingWarning2Label;
 
     @FXML
     private TextField siteNameTextField;
@@ -79,14 +83,19 @@ public class SavePasswordController implements Initializable {
             if (originalSite == null) {
                 originalSite = site;
                 passwordDatabase.put(site, new Credential(username, password));
+                ((Stage) saveRecordButton.getScene().getWindow()).close();
             } else {
                 Credential credential = passwordDatabase.get(originalSite);
-                credential.setUsername(username);
-                credential.setPassword(password);
+                if (!username.equals(credential.getUsername()) || !password.equals(credential.getPassword())){
+                    if (showConfirmation("Edit record", "This website record already exists, are you sure you want to edit it?")){
+                        credential.setUsername(username);
+                        credential.setPassword(password);
+                        ((Stage) saveRecordButton.getScene().getWindow()).close();
+                    }
+                } else {
+                    ((Stage) saveRecordButton.getScene().getWindow()).close();
+                }
             }
-
-            ((Stage) saveRecordButton.getScene().getWindow()).close();
-
         } else {
             incompleteRecordLabel.setVisible(true);
         }
@@ -104,6 +113,42 @@ public class SavePasswordController implements Initializable {
         mainPane.setFocusTraversable(true);
         mainPane.setOnMousePressed(e -> mainPane.requestFocus());
 
-        siteNameTextField.textProperty().addListener((obs, oldText, newText) -> siteNameDisplayLabel.setText(newText));
+        siteNameTextField.textProperty().addListener((obs, oldText, newText) -> {
+            siteNameDisplayLabel.setText(newText);
+
+            if (passwordDatabase.containsKey(newText)){
+                originalSite = newText;
+            } else {
+                originalSite = null;
+            }
+        });
+        siteNameTextField.focusedProperty().addListener((obs, wasFocused, isNowFocused) -> {
+            if (wasFocused && !isNowFocused) {
+                String website = siteNameTextField.getText().trim();
+                if (passwordDatabase.containsKey(website)) {
+                    editingWarning1Label.setVisible(true);
+                    editingWarning2Label.setVisible(true);
+                } else {
+                    editingWarning1Label.setVisible(false);
+                    editingWarning2Label.setVisible(false);
+                }
+            }
+        });
+    }
+
+    private boolean showConfirmation(String header, String message) {
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle("Confirmation");
+        alert.setHeaderText(header);
+        alert.setContentText(message);
+
+        ButtonType yesButton = new ButtonType("Yes", ButtonBar.ButtonData.YES);
+        ButtonType noButton = new ButtonType("No", ButtonBar.ButtonData.NO);
+
+        alert.getButtonTypes().setAll(yesButton, noButton);
+
+        Optional<ButtonType> result = alert.showAndWait();
+
+        return result.isPresent() && result.get() == yesButton;
     }
 }
