@@ -4,6 +4,9 @@ public class Credential {
     private String username;
     private String password;
 
+    protected Credential() {
+    }
+
     public Credential(String username, String password) {
         this.username = username;
         this.password = password;

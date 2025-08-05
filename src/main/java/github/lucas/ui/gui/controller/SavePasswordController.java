@@ -85,7 +85,7 @@ public class SavePasswordController implements Initializable {
 
             if (originalSite == null) {
                 originalSite = site;
-                passwordDatabase.put(site, new Credential(username, password));
+                passwordDatabase.put(site.toLowerCase(), new Credential(username, password));
                 ((Stage) saveRecordButton.getScene().getWindow()).close();
             } else {
                 Credential credential = passwordDatabase.get(originalSite);
@@ -143,7 +143,7 @@ public class SavePasswordController implements Initializable {
         });
         siteNameTextField.focusedProperty().addListener((obs, wasFocused, isNowFocused) -> {
             if (wasFocused && !isNowFocused) {
-                String website = siteNameTextField.getText().trim();
+                String website = siteNameTextField.getText().trim().toLowerCase();
                 if (passwordDatabase.containsKey(website)) {
                     editingWarning1Label.setVisible(true);
                     editingWarning2Label.setVisible(true);

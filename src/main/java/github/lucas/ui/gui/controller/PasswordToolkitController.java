@@ -109,11 +109,24 @@ public class PasswordToolkitController implements Initializable {
     @FXML
     private Button verifyPassBreachButton;
 
-    private final Map<String, Credential> passwordDatabase = new HashMap<>();
+    private Map<String, Credential> passwordDatabase;
 
     private ObservableList<String> masterData;
 
     private FilteredList<String> filteredData;
+
+    public void initData(Map<String, Credential> passwordDatabase) {
+        this.passwordDatabase = passwordDatabase;
+
+        masterData = FXCollections.observableArrayList(
+                passwordDatabase.keySet()
+                        .stream()
+                        .sorted(String.CASE_INSENSITIVE_ORDER)
+                        .toList()
+        );
+        filteredData = new FilteredList<>(masterData, s -> true);
+        savedPassListView.setItems(filteredData);
+    }
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -144,11 +157,6 @@ public class PasswordToolkitController implements Initializable {
                 }
             }
         });
-
-        masterData = FXCollections.observableArrayList(passwordDatabase.keySet());
-        filteredData = new FilteredList<>(masterData, s -> true);
-        savedPassListView.setItems(filteredData);
-
         searchBar.textProperty().addListener((obs, oldText, newText) -> {
             clearButton.setVisible(!newText.isEmpty());
             String lowerCaseFilter = newText.toLowerCase();
