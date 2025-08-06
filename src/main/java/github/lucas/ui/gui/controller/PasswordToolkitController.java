@@ -7,6 +7,7 @@ import github.lucas.core.pass_generation.PasswordGenerator;
 import github.lucas.core.pass_strength.PasswordFeedback;
 import github.lucas.core.pass_strength.PasswordStrength;
 import github.lucas.core.pass_strength.PasswordStrengthAnalyzer;
+import github.lucas.ui.gui.utils.DialogUtils;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -174,9 +175,27 @@ public class PasswordToolkitController implements Initializable {
         passGenDisplay.setOnAction(e -> saveGeneratedPassButton.fire());
     }
 
-    @FXML
-    private void clearSearch() {
-        searchBar.clear();
+    private void openEditPopup(String siteName) {
+        try {
+            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/SavePassword.fxml"));
+            Parent popupRoot = fxmlLoader.load();
+
+            SavePasswordController controller = fxmlLoader.getController();
+            controller.setPasswordDatabase(passwordDatabase);
+            controller.setSiteToEdit(siteName);
+
+            Stage stage = new Stage();
+            stage.setScene(new Scene(popupRoot, 400, 600));
+            stage.initModality(Modality.APPLICATION_MODAL);
+            stage.setResizable(false);
+            stage.setTitle("Edit Credentials");
+            stage.initOwner(savedPassListView.getScene().getWindow());
+            stage.showAndWait();
+
+            refreshList();
+        } catch (IOException e) {
+            DialogUtils.showError("Opening record failed", "There was an error opening the record. Please try again later.");
+        }
     }
 
     @FXML
@@ -244,34 +263,16 @@ public class PasswordToolkitController implements Initializable {
                 }
 
             } catch (Exception e) {
-                showError("Password Verification Failed", "There was an error verifying the password. Please try again later.");
+                DialogUtils.showError("Password Verification Failed", "There was an error verifying the password. Please try again later.");
             }
         } else {
             passBreachEmptyInputLabel.setVisible(true);
         }
     }
 
-    private void openEditPopup(String siteName) {
-        try {
-            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/SavePassword.fxml"));
-            Parent popupRoot = fxmlLoader.load();
-
-            SavePasswordController controller = fxmlLoader.getController();
-            controller.setPasswordDatabase(passwordDatabase);
-            controller.setSiteToEdit(siteName);
-
-            Stage stage = new Stage();
-            stage.setScene(new Scene(popupRoot, 400, 600));
-            stage.initModality(Modality.APPLICATION_MODAL);
-            stage.setResizable(false);
-            stage.setTitle("Edit Credentials");
-            stage.initOwner(savedPassListView.getScene().getWindow());
-            stage.showAndWait();
-
-            refreshList();
-        } catch (IOException e) {
-            showError("Opening record failed", "There was an error opening the record. Please try again later.");
-        }
+    @FXML
+    private void clearSearch() {
+        searchBar.clear();
     }
 
     private void updateStrengthLabels(PasswordFeedback feedback) {
@@ -319,14 +320,6 @@ public class PasswordToolkitController implements Initializable {
 
     private void setFulfilledRequirement(Label label) {
         label.setStyle("-fx-text-fill: " + GREEN + ";");
-    }
-
-    private void showError(String header, String message) {
-        Alert alert = new Alert(Alert.AlertType.ERROR);
-        alert.setTitle("Error");
-        alert.setHeaderText(header);
-        alert.setContentText(message);
-        alert.showAndWait();
     }
 
     private void refreshList() {

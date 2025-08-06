@@ -18,12 +18,20 @@ import java.util.Arrays;
 import java.util.Base64;
 import java.util.Map;
 
+/**
+ * Utility class for secure data persistence using AES encryption.
+ * Provides methods to save and load encrypted files, derive keys from passphrase and salt,
+ * and perform encryption and decryption operations. Data is serialized as JSON and protected
+ * with a user-derived key.
+ */
 public class EncryptedPersistence {
     private static final ObjectMapper mapper = new ObjectMapper();
 
+    // AES algorithm and transformation settings
     private static final String ALGORITHM = "AES";
     private static final String TRANSFORMATION = "AES/ECB/PKCS5Padding"; // CBC using initialization vector is safer
 
+    // Container class for encrypted file data and salt
     public static class EncryptedFileData {
         public String salt;
         public String data;
@@ -57,6 +65,7 @@ public class EncryptedPersistence {
         mapper.writerWithDefaultPrettyPrinter().writeValue(file, container);
     }
 
+    // Loads encrypted file data from disk
     public static EncryptedFileData loadEncryptedFile(File file) throws IOException {
         if (!file.exists()) {
             return null;
@@ -64,6 +73,7 @@ public class EncryptedPersistence {
         return mapper.readValue(file, EncryptedFileData.class);
     }
 
+    // Decrypts encrypted data and deserializes it to a map of credentials
     public static Map<String, Credential> decryptData(String encrypted, SecretKeySpec key) throws Exception {
         // Decrypt encrypted string back to JSON string
         String decryptedJson = decrypt(encrypted, key);
@@ -73,7 +83,7 @@ public class EncryptedPersistence {
         });
     }
 
-    //Encryption functions
+    // Creates an AES key from a passphrase using SHA-256
     public static SecretKeySpec createSecretKeySHA256(String passphrase) throws Exception {
         byte[] key = passphrase.getBytes(StandardCharsets.UTF_8);
         MessageDigest sha = MessageDigest.getInstance("SHA-256");
@@ -82,6 +92,7 @@ public class EncryptedPersistence {
         return new SecretKeySpec(key, ALGORITHM);
     }
 
+    // Derives an AES key from a passphrase and salt using PBKDF2
     public static SecretKeySpec deriveKeyWithSaltPBKDF2(String passphrase, byte[] salt) throws Exception {
         int iterations = 65536;
         int keyLength = 128;
@@ -93,6 +104,7 @@ public class EncryptedPersistence {
         return new SecretKeySpec(key, ALGORITHM);
     }
 
+    // Encrypts a string using AES and returns the result as Base64
     public static String encrypt(String input, SecretKeySpec key) throws Exception {
         Cipher cipher = Cipher.getInstance(TRANSFORMATION);
         cipher.init(Cipher.ENCRYPT_MODE, key);
@@ -100,6 +112,7 @@ public class EncryptedPersistence {
         return Base64.getEncoder().encodeToString(encryptedBytes);
     }
 
+    // Decrypts a Base64-encoded string using AES
     public static String decrypt(String encrypted, SecretKeySpec key) throws Exception {
         Cipher cipher = Cipher.getInstance(TRANSFORMATION);
         cipher.init(Cipher.DECRYPT_MODE, key);
@@ -108,6 +121,7 @@ public class EncryptedPersistence {
         return new String(decryptedBytes, StandardCharsets.UTF_8);
     }
 
+    // Generates a random salt of the specified length
     public static byte[] generateSalt(int length) {
         byte[] salt = new byte[length];
         new SecureRandom().nextBytes(salt);

@@ -3,12 +3,12 @@ package github.lucas.ui.gui;
 import github.lucas.core.pass_generation.Credential;
 import github.lucas.persistence.security.EncryptedPersistence;
 import github.lucas.ui.gui.controller.PasswordToolkitController;
+import github.lucas.ui.gui.utils.DialogUtils;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.fxml.FXMLLoader;
-import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.PasswordField;
@@ -85,7 +85,7 @@ public class PasswordToolkit extends Application {
                         passwordDatabase.putAll(loaded);
                         System.out.println("Data loaded with encryption.");
                     } catch (Exception e) {
-                        showAlert("Failed to decrypt data. Wrong password?");
+                        DialogUtils.showAlert("Failed to decrypt data. Wrong password?");
                         Platform.exit();
                     }
                 }
@@ -132,10 +132,10 @@ public class PasswordToolkit extends Application {
                 if (testPassphrase(pass)) {
                     return pass;
                 } else {
-                    showAlert("Incorrect password. Try again.");
+                    DialogUtils.showAlert("Incorrect password. Try again.");
                 }
             } catch (Exception e) {
-                showAlert("Error trying to decrypt. Try again.");
+                DialogUtils.showAlert("Error trying to decrypt. Try again.");
             }
         }
         return null;
@@ -157,14 +157,6 @@ public class PasswordToolkit extends Application {
         } catch (Exception e) {
             return false;
         }
-    }
-
-    private void showAlert(String message) {
-        Alert alert = new Alert(Alert.AlertType.ERROR);
-        alert.setTitle("Error");
-        alert.setHeaderText(null);
-        alert.setContentText(message);
-        alert.showAndWait();
     }
 
     public static void main(String[] args) {

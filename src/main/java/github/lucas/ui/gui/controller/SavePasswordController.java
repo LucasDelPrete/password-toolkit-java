@@ -12,10 +12,11 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
 
+import github.lucas.ui.gui.utils.DialogUtils;
 import java.net.URL;
 import java.util.Map;
-import java.util.Optional;
 import java.util.ResourceBundle;
+
 
 public class SavePasswordController implements Initializable {
 
@@ -51,66 +52,6 @@ public class SavePasswordController implements Initializable {
 
     private Map<String, Credential> passwordDatabase;
     private String originalSite;
-
-    public void setPassword(String password) {
-        passwordTextField.setText(password);
-    }
-
-    public void setPasswordDatabase(Map<String, Credential> passwordDatabase) {
-        this.passwordDatabase = passwordDatabase;
-    }
-
-    public void setSiteToEdit(String site) {
-        siteNameTextField.setText(site);
-        siteNameTextField.setDisable(true);
-        originalSite = site;
-
-        deleteRecordButton.setVisible(true);
-
-        Credential credentials = passwordDatabase.get(site);
-        if (credentials != null) {
-            usernameTextField.setText(credentials.getUsername());
-            passwordTextField.setText(credentials.getPassword());
-        }
-    }
-
-    @FXML
-    void saveRecord(ActionEvent event) {
-        String site = siteNameTextField.getText().trim();
-        String username = usernameTextField.getText().trim();
-        String password = passwordTextField.getText().trim();
-
-        if (!site.isEmpty() && !username.isEmpty() && !password.isEmpty()) {
-            incompleteRecordLabel.setVisible(false);
-
-            if (originalSite == null) {
-                originalSite = site;
-                passwordDatabase.put(site.toLowerCase(), new Credential(username, password));
-                ((Stage) saveRecordButton.getScene().getWindow()).close();
-            } else {
-                Credential credential = passwordDatabase.get(originalSite);
-                if (!username.equals(credential.getUsername()) || !password.equals(credential.getPassword())) {
-                    if (showConfirmation("Edit record", "This website record already exists, are you sure you want to edit it?")) {
-                        credential.setUsername(username);
-                        credential.setPassword(password);
-                        ((Stage) saveRecordButton.getScene().getWindow()).close();
-                    }
-                } else {
-                    ((Stage) saveRecordButton.getScene().getWindow()).close();
-                }
-            }
-        } else {
-            incompleteRecordLabel.setVisible(true);
-        }
-    }
-
-    @FXML
-    void deleteRecord(ActionEvent event) {
-        if (showConfirmation("Delete record", "Are you sure you want to delete this record?")) {
-            passwordDatabase.remove(siteNameTextField.getText().trim());
-            ((Stage) saveRecordButton.getScene().getWindow()).close();
-        }
-    }
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
@@ -158,19 +99,63 @@ public class SavePasswordController implements Initializable {
         passwordTextField.setOnAction(e -> saveRecordButton.fire());
     }
 
-    private boolean showConfirmation(String header, String message) {
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-        alert.setTitle("Confirmation");
-        alert.setHeaderText(header);
-        alert.setContentText(message);
+    @FXML
+    void saveRecord(ActionEvent event) {
+        String site = siteNameTextField.getText().trim();
+        String username = usernameTextField.getText().trim();
+        String password = passwordTextField.getText().trim();
 
-        ButtonType yesButton = new ButtonType("Yes", ButtonBar.ButtonData.YES);
-        ButtonType noButton = new ButtonType("No", ButtonBar.ButtonData.NO);
+        if (!site.isEmpty() && !username.isEmpty() && !password.isEmpty()) {
+            incompleteRecordLabel.setVisible(false);
 
-        alert.getButtonTypes().setAll(yesButton, noButton);
+            if (originalSite == null) {
+                originalSite = site;
+                passwordDatabase.put(site.toLowerCase(), new Credential(username, password));
+                ((Stage) saveRecordButton.getScene().getWindow()).close();
+            } else {
+                Credential credential = passwordDatabase.get(originalSite);
+                if (!username.equals(credential.getUsername()) || !password.equals(credential.getPassword())) {
+                    if (DialogUtils.showConfirmation("Edit record", "This website record already exists, are you sure you want to edit it?")) {
+                        credential.setUsername(username);
+                        credential.setPassword(password);
+                        ((Stage) saveRecordButton.getScene().getWindow()).close();
+                    }
+                } else {
+                    ((Stage) saveRecordButton.getScene().getWindow()).close();
+                }
+            }
+        } else {
+            incompleteRecordLabel.setVisible(true);
+        }
+    }
 
-        Optional<ButtonType> result = alert.showAndWait();
+    @FXML
+    void deleteRecord(ActionEvent event) {
+        if (DialogUtils.showConfirmation("Delete record", "Are you sure you want to delete this record?")) {
+            passwordDatabase.remove(siteNameTextField.getText().trim());
+            ((Stage) saveRecordButton.getScene().getWindow()).close();
+        }
+    }
 
-        return result.isPresent() && result.get() == yesButton;
+    public void setPassword(String password) {
+        passwordTextField.setText(password);
+    }
+
+    public void setPasswordDatabase(Map<String, Credential> passwordDatabase) {
+        this.passwordDatabase = passwordDatabase;
+    }
+
+    public void setSiteToEdit(String site) {
+        siteNameTextField.setText(site);
+        siteNameTextField.setDisable(true);
+        originalSite = site;
+
+        deleteRecordButton.setVisible(true);
+
+        Credential credentials = passwordDatabase.get(site);
+        if (credentials != null) {
+            usernameTextField.setText(credentials.getUsername());
+            passwordTextField.setText(credentials.getPassword());
+        }
     }
 }
