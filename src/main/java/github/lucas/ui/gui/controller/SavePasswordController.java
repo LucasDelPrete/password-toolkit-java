@@ -102,6 +102,7 @@ public class SavePasswordController implements Initializable {
     @FXML
     void saveRecord(ActionEvent event) {
         String site = siteNameTextField.getText().trim();
+        String siteKey = site.toLowerCase();
         String username = usernameTextField.getText().trim();
         String password = passwordTextField.getText().trim();
 
@@ -110,11 +111,11 @@ public class SavePasswordController implements Initializable {
 
             if (originalSite == null) {
                 originalSite = site;
-                passwordDatabase.put(site.toLowerCase(), new Credential(username, password));
+                passwordDatabase.put(site, new Credential(username, password));
                 ((Stage) saveRecordButton.getScene().getWindow()).close();
             } else {
-                Credential credential = passwordDatabase.get(originalSite);
-                if (!username.equals(credential.getUsername()) || !password.equals(credential.getPassword())) {
+                Credential credential = passwordDatabase.get(originalSite.toLowerCase());
+                if (credential != null && (!username.equals(credential.getUsername()) || !password.equals(credential.getPassword()))) {
                     if (DialogUtils.showConfirmation("Edit record", "This website record already exists, are you sure you want to edit it?")) {
                         credential.setUsername(username);
                         credential.setPassword(password);
@@ -132,7 +133,7 @@ public class SavePasswordController implements Initializable {
     @FXML
     void deleteRecord(ActionEvent event) {
         if (DialogUtils.showConfirmation("Delete record", "Are you sure you want to delete this record?")) {
-            passwordDatabase.remove(siteNameTextField.getText().trim());
+            passwordDatabase.remove(siteNameTextField.getText().trim().toLowerCase());
             ((Stage) saveRecordButton.getScene().getWindow()).close();
         }
     }

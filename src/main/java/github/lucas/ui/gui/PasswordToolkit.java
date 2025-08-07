@@ -80,7 +80,7 @@ public class PasswordToolkit extends Application {
                     secretKey = EncryptedPersistence.deriveKeyWithSaltPBKDF2(passphrase, salt);
 
                     try {
-                        Map<String, Credential> loaded = EncryptedPersistence.decryptData(encryptedFileData.data, secretKey);
+                        Map<String, Credential> loaded = EncryptedPersistence.decryptData(encryptedFileData, secretKey);
                         passwordDatabase.clear();
                         passwordDatabase.putAll(loaded);
                         System.out.println("Data loaded with encryption.");
@@ -90,6 +90,7 @@ public class PasswordToolkit extends Application {
                     }
                 }
             } else {
+                // First run: generate salt, derive key, save empty DB
                 salt = EncryptedPersistence.generateSalt(16);
                 secretKey = EncryptedPersistence.deriveKeyWithSaltPBKDF2(passphrase, salt);
                 EncryptedPersistence.saveToFileEncrypted(passwordDatabase, saveFile, salt, secretKey);
@@ -99,6 +100,7 @@ public class PasswordToolkit extends Application {
             e.printStackTrace();
         }
     }
+
 
     private String promptUserForKey() {
         Dialog<String> dialog = new Dialog<>();
@@ -151,7 +153,7 @@ public class PasswordToolkit extends Application {
             byte[] saltBytes = encryptedData.getSaltBytes();
             SecretKeySpec testKey = EncryptedPersistence.deriveKeyWithSaltPBKDF2(passphrase, saltBytes);
 
-            EncryptedPersistence.decryptData(encryptedData.data, testKey);
+            EncryptedPersistence.decryptData(encryptedData, testKey);
 
             return true;
         } catch (Exception e) {
