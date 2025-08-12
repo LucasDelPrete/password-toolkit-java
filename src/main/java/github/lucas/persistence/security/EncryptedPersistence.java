@@ -58,6 +58,25 @@ public class EncryptedPersistence {
         }
     }
 
+    public static void changePassword(File file, String oldPass, String newPass) throws Exception {
+        // Load existing encrypted file
+        EncryptedFileData encryptedFileData = loadEncryptedFile(file);
+        if (encryptedFileData == null) {
+            throw new IOException("No file found to change password.");
+        }
+
+        // Derive old key and decrypt
+        SecretKeySpec oldKey = deriveKeyWithSaltPBKDF2(oldPass, encryptedFileData.getSaltBytes());
+        Map<String, Credential> decryptedMap = decryptData(encryptedFileData, oldKey);
+
+        // Generate new salt and key
+        byte[] newSalt = generateSalt(16);
+        SecretKeySpec newKey = deriveKeyWithSaltPBKDF2(newPass, newSalt);
+
+        // Save with new password (and new salt/IV)
+        saveToFileEncrypted(decryptedMap, file, newSalt, newKey);
+    }
+
     // Encrypted safe save/load functions
     public static void saveToFileEncrypted(Map<String, Credential> map, File file, byte[] salt, SecretKeySpec key) throws Exception {
         // 1) Convert map to JSON string
