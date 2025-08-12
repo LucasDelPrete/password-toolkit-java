@@ -4,6 +4,8 @@ import github.lucas.core.pass_generation.Credential;
 import github.lucas.persistence.security.EncryptedPersistence;
 import github.lucas.ui.gui.controller.PasswordToolkitController;
 import github.lucas.ui.gui.utils.DialogUtils;
+import github.lucas.ui.gui.utils.SaveFileUtils;
+import github.lucas.ui.gui.utils.SaveFileUtils.*;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.scene.Parent;
@@ -25,25 +27,26 @@ public class PasswordToolkit extends Application {
     private final Map<String, Credential> passwordDatabase = new HashMap<>();
     private final File saveFile = new File("passwords.enc");
 
-    private String passphrase;
     private byte[] salt;
     private SecretKeySpec secretKey;
 
     @Override
     public void start(Stage stage) throws Exception {
-        passphrase = promptUserForKeyWithRetries();
+        String passphrase = promptUserForKeyWithRetries();
         if (passphrase == null) {
             Platform.exit();
             return;
         }
 
-        loadDataEncrypted();
+        EncryptionParams params = SaveFileUtils.loadDataEncrypted(passwordDatabase, saveFile, passphrase);
+        this.salt = params.salt();
+        this.secretKey = params.secretKey();
 
         FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/PasswordToolkit.fxml"));
         Parent root = fxmlLoader.load();
 
         PasswordToolkitController controller = fxmlLoader.getController();
-        controller.initData(passwordDatabase);
+        controller.initData(passwordDatabase, saveFile, this);
 
         stage.setTitle("Password Toolkit");
         Scene scene = new Scene(root, 1000, 700);
@@ -55,52 +58,13 @@ public class PasswordToolkit extends Application {
 
     @Override
     public void stop() throws Exception {
-        saveDataEncrypted();
+        SaveFileUtils.saveDataEncrypted(passwordDatabase, saveFile, salt, secretKey);
     }
 
-    public void saveDataEncrypted() {
-        try {
-            if (secretKey == null || salt == null) {
-                System.err.println("Secret key or salt not initialized, cannot save securely.");
-                return;
-            }
-            EncryptedPersistence.saveToFileEncrypted(passwordDatabase, saveFile, salt, secretKey);
-            System.out.println("Data saved with encryption.");
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+    public void setEncryptionParams(byte[] salt, SecretKeySpec secretKey) {
+        this.salt = salt;
+        this.secretKey = secretKey;
     }
-
-    public void loadDataEncrypted() {
-        try {
-            if (saveFile.exists()) {
-                EncryptedPersistence.EncryptedFileData encryptedFileData = EncryptedPersistence.loadEncryptedFile(saveFile);
-                if (encryptedFileData != null) {
-                    salt = encryptedFileData.getSaltBytes();
-                    secretKey = EncryptedPersistence.deriveKeyWithSaltPBKDF2(passphrase, salt);
-
-                    try {
-                        Map<String, Credential> loaded = EncryptedPersistence.decryptData(encryptedFileData, secretKey);
-                        passwordDatabase.clear();
-                        passwordDatabase.putAll(loaded);
-                        System.out.println("Data loaded with encryption.");
-                    } catch (Exception e) {
-                        DialogUtils.showAlert("Failed to decrypt data. Wrong password?");
-                        Platform.exit();
-                    }
-                }
-            } else {
-                // First run: generate salt, derive key, save empty DB
-                salt = EncryptedPersistence.generateSalt(16);
-                secretKey = EncryptedPersistence.deriveKeyWithSaltPBKDF2(passphrase, salt);
-                EncryptedPersistence.saveToFileEncrypted(passwordDatabase, saveFile, salt, secretKey);
-                System.out.println("Starting with empty database and encryption.");
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
 
     private String promptUserForKey() {
         Dialog<String> dialog = new Dialog<>();
@@ -134,10 +98,10 @@ public class PasswordToolkit extends Application {
                 if (testPassphrase(pass)) {
                     return pass;
                 } else {
-                    DialogUtils.showAlert("Incorrect password. Try again.");
+                    DialogUtils.showError("Wrong password", "Incorrect password. Try again.");
                 }
             } catch (Exception e) {
-                DialogUtils.showAlert("Error trying to decrypt. Try again.");
+                DialogUtils.showError("Error decrypting", "Error trying to decrypt. Try again.");
             }
         }
         return null;

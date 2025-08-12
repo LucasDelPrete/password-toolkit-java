@@ -70,14 +70,15 @@ public class SavePasswordController implements Initializable {
             }
         });
         siteNameTextField.textProperty().addListener((obs, oldText, newText) -> {
-            siteNameDisplayLabel.setText(newText);
+            String site = newText.toLowerCase();
+            siteNameDisplayLabel.setText(site);
 
             boolean found = passwordDatabase.keySet()
                     .stream()
-                    .anyMatch(k -> k.equalsIgnoreCase(newText));
+                    .anyMatch(k -> k.equalsIgnoreCase(site));
 
             if (found) {
-                originalSite = newText;
+                originalSite = site;
             } else {
                 originalSite = null;
             }
@@ -110,11 +111,11 @@ public class SavePasswordController implements Initializable {
             incompleteRecordLabel.setVisible(false);
 
             if (originalSite == null) {
-                originalSite = site;
-                passwordDatabase.put(site, new Credential(username, password));
+                originalSite = siteKey;
+                passwordDatabase.put(originalSite, new Credential(username, password));
                 ((Stage) saveRecordButton.getScene().getWindow()).close();
             } else {
-                Credential credential = passwordDatabase.get(originalSite.toLowerCase());
+                Credential credential = passwordDatabase.get(originalSite);
                 if (credential != null && (!username.equals(credential.getUsername()) || !password.equals(credential.getPassword()))) {
                     if (DialogUtils.showConfirmation("Edit record", "This website record already exists, are you sure you want to edit it?")) {
                         credential.setUsername(username);

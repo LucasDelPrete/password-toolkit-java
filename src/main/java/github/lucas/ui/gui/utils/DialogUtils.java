@@ -31,8 +31,8 @@ public class DialogUtils {
     }
 
     public static void showAlert(String message) {
-        Alert alert = new Alert(Alert.AlertType.ERROR);
-        alert.setTitle("Error");
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("Info");
         alert.setHeaderText(null);
         alert.setContentText(message);
         alert.showAndWait();
