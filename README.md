@@ -17,8 +17,8 @@ A simple Java application for:
  - JavaFX
 
 ### Prerequisites
-- Java 17 or higher
-- Maven (for building)
+- JDK 17 or higher
+- Maven (for building) ([Installation Guide](https://maven.apache.org/install.html))
 
 ### Clone the project
 ```bash
